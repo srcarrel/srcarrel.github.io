@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="A personal blog exploring mathematics">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exploring Mathematics</title>
+<link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+<link href="assets/css/html4css1.css" rel="stylesheet" type="text/css">
+<link href="assets/css/nikola_rst.css" rel="stylesheet" type="text/css">
+<link href="assets/css/code.css" rel="stylesheet" type="text/css">
+<link href="assets/css/colorbox.css" rel="stylesheet" type="text/css">
+<link href="assets/css/theme.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
+<link rel="canonical" href="http://www.seancarrell.com/">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/a-simple-quadratic-convolutional-layer-in-tensorflow/" type="text/html">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse navbar-static-top"><div class="container">
+<!-- This keeps the margins nice -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://www.seancarrell.com/">
+
+                <span id="blog-title">Exploring Mathematics</span>
+            </a>
+        </div>
+<!-- /.navbar-header -->
+        <div class="collapse navbar-collapse" id="bs-navbar" aria-expanded="false">
+            <ul class="nav navbar-nav">
+<li>
+<a href="archive.html">Archive</a>
+                </li>
+<li>
+<a href="categories/">Tags</a>
+                </li>
+<li>
+<a href="rss.xml">RSS feed</a>
+
+                
+            </li>
+</ul>
+<ul class="nav navbar-nav navbar-right"></ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        <div class="row">
+            
+            
+
+    
+
+
+    
+<div class="postindex">
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/a-simple-quadratic-convolutional-layer-in-tensorflow/" class="u-url">A Simple Quadratic Convolutional Layer in Tensorflow</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Sean Carrell
+            </span></p>
+            <p class="dateline"><a href="posts/a-simple-quadratic-convolutional-layer-in-tensorflow/" rel="bookmark"><time class="published dt-published" datetime="2017-11-09T14:19:36-05:00" title="2017-11-09 14:19">2017-11-09 14:19</time></a></p>
+        </div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>Generally in computer vision research and applications the greatest successes have come from neural networks composed of various convolutional layers. More specifically, they are composed of linear convolutional layers.</p>
+<p>As a refresher, in order to construct a linear convolutional layer applied to an input image <span class="math">\(X\)</span> in which the convolutional layer has kernel of size <span class="math">\(k \times k\)</span>, we first decompose <span class="math">\(X\)</span> as a sequence of  <span class="math">\(k \times k\)</span> patches. Then, we vectorize each patch, i.e., we reshape the patch as a vector of length <span class="math">\(k^2\)</span>. Lastly, given each vectorized patch <span class="math">\(x\)</span>, we compute a result given by</p>
+<div class="math">
+\begin{equation*}
+y = w^T x + b,
+\end{equation*}
+</div>
+<p>where <span class="math">\(w\)</span> is a vector of length <span class="math">\(k^2\)</span>, the kernel, and <span class="math">\(b\)</span> is the bias term. For a beautiful, lucid description of linear convolutions I recommend <a class="reference external" href="http://colah.github.io/posts/2014-07-Understanding-Convolutions/">Christopher Olah's post</a>.</p>
+<p>Of course, in the description above I have intentionally ignored some very important details, such as what to do about patches on the boarder of the input (same or valid convolutions), dealing with stride length, etc? What is import to the discussion here, however, is the type of function that is applied to each patch.</p>
+<p>The reason I have been stressing the 'linear' in linear convolutions is that the function applied to each patch is a typical linear function. In principle we need not constrain ourselves to linear functions, however, there are good reasons to do so. For one, linear functions are very easy to compute. In fact, many of the recent advances in machine learning can be attributed to our ability to find increasingly more effective ways to perform linear operations (gpus and the like). Another reason is that computing the gradient of a linear function is also very easy, making things like stochastic gradient descent possible and effective when used to optimized linear convolutional networks.</p>
+<p>There are also reasons to try other functions besides linear. In a recent <a class="reference external" href="https://arxiv.org/abs/1708.07038">Arxiv paper</a>, some authors tried what they called Volterra convolutional layers, or more generally quadratic layers. The idea here is that for each patch <span class="math">\(x\)</span> in the input image, we compute the value</p>
+<div class="math">
+\begin{equation*}
+x^T Q x + w^T x + b,
+\end{equation*}
+</div>
+<p>where <span class="math">\(w\)</span> and <span class="math">\(b\)</span> are the same as those appearing in a linear convolution and <span class="math">\(Q\)</span> is a <span class="math">\(k^2 \times k^2\)</span> matrix which contributes a quadratic non-linearity.</p>
+<p>It should be noted that this isn't the first time that a quadratic convolutional layer has been proposed in the neural computing literature. <a class="reference external" href="https://aclanthology.info/pdf/N/N09/N09-2062.pdf">For example</a>, some researchers proposed a similar extension however this was done a little while ago when computational facilities were not quite as good as they are now. In addition, the reason for trying a quadratic nonlinearity comes from research into the modelling of the eye and how it responds to various stimulus.</p>
+<p>The researchers involved in the Volterra convolutions paper made their code available although for my purposes it was not terribly helpful. Mostly because it was written in Lua and CUDA code implementing the convolution itself. In order to play around with this type of filter I wrote a crude implementation in Tensorflow. Note that there is a slight difference in my implementation compared to the original author's. I do not take into account the symmetric nature of the quadratic form used and so in effect perform some redundant computations. This shouldn't affect the performance of the filter in terms of accuracy and applicability however.</p>
+<pre class="code python"><a name="rest_code_7165e524362c4a15a7556fd85892f05c-1"></a><span class="k">def</span> <span class="nf">volterra_conv</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">'SAME'</span><span class="p">):</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-2"></a>    <span class="n">input_patches</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">extract_image_patches</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-3"></a>                                            <span class="n">ksizes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-4"></a>                                            <span class="n">strides</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-5"></a>                                            <span class="n">rates</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-6"></a>                                            <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-7"></a>    <span class="n">batch</span><span class="p">,</span> <span class="n">out_row</span><span class="p">,</span> <span class="n">out_col</span><span class="p">,</span> <span class="n">sizes</span> <span class="o">=</span> <span class="n">input_patches</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-8"></a>    <span class="n">input_patches</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">input_patches</span><span class="p">,</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-9"></a>                              <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">out_row</span><span class="p">,</span> <span class="n">out_col</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">input_dim</span><span class="p">])</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-10"></a>    <span class="n">V</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'abcid,abcjd,dijo-&gt;abcdo'</span><span class="p">,</span> <span class="n">input_patches</span><span class="p">,</span> <span class="n">input_patches</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-11"></a>    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-12"></a>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-13"></a>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-14"></a><span class="k">def</span> <span class="nf">volterra_layer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-15"></a>                  <span class="n">filters</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-16"></a>                  <span class="n">kernel_size</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-17"></a>                  <span class="n">padding</span><span class="o">=</span><span class="s1">'SAME'</span><span class="p">,</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-18"></a>                  <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">):</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-19"></a>    <span class="n">input_dim</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span><span class="o">.</span><span class="n">as_list</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-20"></a>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-21"></a>    <span class="n">W1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal</span><span class="p">([</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">filters</span><span class="p">]))</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-22"></a>    <span class="n">W2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal</span><span class="p">([</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">filters</span><span class="p">]))</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-23"></a>    <span class="n">b</span>  <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">filters</span><span class="p">]))</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-24"></a>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-25"></a>    <span class="k">return</span> <span class="n">activation</span><span class="p">(</span><span class="n">volterra_conv</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">W1</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)</span>
+<a name="rest_code_7165e524362c4a15a7556fd85892f05c-26"></a>                        <span class="o">+</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">W2</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+</pre>
+<p>Using the code above to implement a quadratic convolutional layer I compared against a standard linear convolutional network applied to the Fashion MNIST data set. The benchmark code used is composed of a 5x5 linear convolutional layer with 32 filters, a max pooling layer, another 5x5 linear convolutional layer with 64 filters, a max pooling layer and then finally a fully dense layer. In order to play fair, since a quadratic convolutional layer has many more free parameters, I tested against a model which consisted of a single 3x3 quadratic convolutional layer with 32 filters followed by max pooling down to a 7x7 image (so it wasn't cheating by using a higher resolution upper layer) followed fully dense layer.</p>
+<img alt="/images/LinearvsQuadratic.png" src="images/LinearvsQuadratic.png"><p>After running both models for 100 epochs the baseline model achieved an accuracy of about 90.23% on the test set and the quadratic model achieved 90.97%. As can be seen in the image above, the quadratic model seems to converge quicker than the baseline linear model. What isn't clear is if this holds for more complicated data sets or more sophisticated models. In addition, due to limited computing power on my end, I do not know if the quadratic model converges to a higher accuracy than the linear model after a larger number of epochs.</p>
+<p>What is interesting about this result, however, is the much smaller number of parameters in the quadratic model compared to the linear model. The quadratic model has around 3000 parameters in the convolutional layers where as the linear model has somewhere over 50000 parameters (if my arithmetic is correct). It would be interesting to do a similar comparison on a richer data set.</p>
+<p>Please note that a <a class="reference external" href="https://github.com/srcarrel/QuadraticConvolutions">Python notebook</a> is available containing the tests detailed above.</p>
+</div>
+    </div>
+    </article>
+</div>
+
+
+
+
+
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha256-SDRP1VVYu+tgAGKhddBSl5+ezofHKZeI+OzxakbIe/Y=" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+        MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
+        </script>
+</div>
+        <!--End of body content-->
+
+        <footer id="footer">
+            Contents © 2017         <a href="mailto:s.r.carrell@gmail.com">Sean Carrell</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+        </footer>
+</div>
+</div>
+
+
+            <script src="assets/js/jquery.min.js"></script><script src="assets/js/bootstrap.min.js"></script><script src="assets/js/moment-with-locales.min.js"></script><script src="assets/js/fancydates.js"></script><script src="assets/js/jquery.colorbox-min.js"></script><script>$('a.image-reference:not(.islink) img:not(.islink)').parent().colorbox({rel:"gal",maxWidth:"100%",maxHeight:"100%",scalePhotos:true});</script><!-- fancy dates --><script>
+    moment.locale("en");
+    fancydates(0, "YYYY-MM-DD HH:mm");
+    </script><!-- end fancy dates -->
+</body>
+</html>

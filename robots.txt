@@ -1,0 +1,4 @@
+Sitemap: http://www.seancarrell.com/sitemapindex.xml
+
+User-Agent: *
+Host: www.seancarrell.com
