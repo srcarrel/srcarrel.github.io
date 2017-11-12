@@ -4,7 +4,7 @@
 .. tags: Tensorflow, Neural Networks, mathjax
 .. category: Neural Networks
 .. link:
-.. description: 
+.. description:
 .. type: text
 
 Generally in computer vision research and applications the greatest successes have come from neural networks composed of various convolutional layers. More specifically, they are composed of linear convolutional layers.
