@@ -69,6 +69,7 @@ The researchers involved in the Volterra convolutions paper made their code avai
 Using the code above to implement a quadratic convolutional layer I compared against a standard linear convolutional network applied to the Fashion MNIST data set. The benchmark code used is composed of a 5x5 linear convolutional layer with 32 filters, a max pooling layer, another 5x5 linear convolutional layer with 64 filters, a max pooling layer and then finally a fully dense layer. In order to play fair, since a quadratic convolutional layer has many more free parameters, I tested against a model which consisted of a single 3x3 quadratic convolutional layer with 32 filters followed by max pooling down to a 7x7 image (so it wasn't cheating by using a higher resolution upper layer) followed fully dense layer.
 
 .. image:: /images/LinearvsQuadratic.png
+   :align: center
 
 After running both models for 100 epochs the baseline model achieved an accuracy of about 90.23% on the test set and the quadratic model achieved 90.97%. As can be seen in the image above, the quadratic model seems to converge quicker than the baseline linear model. What isn't clear is if this holds for more complicated data sets or more sophisticated models. In addition, due to limited computing power on my end, I do not know if the quadratic model converges to a higher accuracy than the linear model after a larger number of epochs.
 
